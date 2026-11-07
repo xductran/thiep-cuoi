@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thiệp cưới Huyền Trang & Xuân Đức</title>
+<meta name="description" content="Tạo thiệp cưới có tên khách mời, lưu ảnh PNG để gửi qua Zalo.">
+<meta property="og:title" content="Thiệp cưới Huyền Trang & Xuân Đức">
+<meta property="og:description" content="Tạo thiệp có tên khách mời và lưu ảnh để gửi Zalo">
+<meta name="theme-color" content="#5e1220">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cormorant+Infant:wght@400;500;600;700&family=Pinyon+Script&display=swap">
+<style>
+/* Layout: one mobile column — chọn mẫu → tên khách → xem trước, nút lưu ảnh dính đáy màn hình */
+:root{
+  --wine:#5e1220; --wine-2:#7a2232; --rose:#f6ebe8; --line:#e6d6d1;
+  --ink:#2c2224; --muted:#7c6d6b; --paper:#fffaf6; --ground:#f3eeeb; --ok:#2f7a4a;
+  --ui:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --serif:"Cormorant Infant",Georgia,"Times New Roman",serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.5 var(--ui);
+  padding-top:env(safe-area-inset-top,0px)}
+.wrap{max-width:1100px;margin:0 auto;padding-block:14px 120px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;align-items:center;gap:12px;padding:4px 0 14px}
+.mono{width:44px;height:44px;border-radius:50%;background:var(--wine);color:#f3e1cf;display:grid;place-items:center;
+  font:600 20px/1 var(--serif);flex:none}
+header h1{margin:0;font:600 24px/1.1 var(--serif);color:var(--wine);text-wrap:balance}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:18px}
+.field{display:grid;gap:8px;min-width:0}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.seg{display:grid;gap:6px}
+.seg.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.seg button{appearance:none;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 6px;
+  font:600 14px/1.25 var(--ui);color:var(--ink);cursor:pointer;min-height:44px}
+.seg button small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--wine);border-color:var(--wine);color:#fff}
+.seg button[aria-pressed="true"] small{color:#efd6cc}
+input[type=text],textarea{width:100%;border:1px solid #d9c7c1;border-radius:10px;padding:12px 13px;
+  font:16px/1.4 var(--ui);color:var(--ink);background:#fff}
+textarea{min-height:120px;resize:vertical}
+input:disabled{background:#f4efed;color:#a89a97}
+input:focus-visible,textarea:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--wine-2);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line);background:var(--rose);color:var(--wine);border-radius:999px;
+  padding:6px 11px;font:500 13px var(--ui);cursor:pointer}
+.hint{margin:0;font-size:12.5px;color:var(--muted)}
+.preview{position:sticky;top:12px;display:grid;gap:10px;min-width:0}
+.stage{background:#e9e1dc;border-radius:14px;padding:12px;display:grid;place-items:center;min-height:200px}
+#cv{display:block;width:100%;height:auto;max-width:520px;border-radius:4px}
+#cv.wide{max-width:100%}
+.meta{font-size:12.5px;color:var(--muted);text-align:center;margin:0}
+details{border:1px solid var(--line);border-radius:12px;padding:0 14px;background:#fffdfc}
+summary{cursor:pointer;padding:12px 0;font-weight:600;color:var(--wine)}
+details[open]{padding-bottom:14px}
+.batch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:12px}
+.batch-grid figure{margin:0;display:grid;gap:4px}
+.batch-grid img{width:100%;border-radius:6px;border:1px solid var(--line);background:#fff}
+.batch-grid figcaption{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}
+.btn{appearance:none;border:0;border-radius:12px;padding:13px 16px;font:700 15px/1.2 var(--ui);cursor:pointer;min-height:48px}
+.btn.pri{background:var(--wine);color:#fff}
+.btn.sec{background:var(--rose);color:var(--wine)}
+.btn:disabled{opacity:.55;cursor:default}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.96);
+  border-top:1px solid var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.bar-in{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr;gap:8px}
+.zalo-tip{display:none;background:#fff6e6;border:1px solid #f0d8a8;color:#6b4b10;border-radius:12px;padding:10px 12px;font-size:13px}
+.is-zalo .zalo-tip{display:block}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(30,12,16,.82);display:grid;place-items:center;
+  padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.modal-in{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:100%;overflow:auto;padding:14px;display:grid;gap:10px}
+.modal-in img{width:100%;height:auto;border-radius:6px;-webkit-touch-callout:default;user-select:auto}
+.modal-in p{margin:0;font-size:14px}
+.modal-in b{color:var(--wine)}
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;
+  background:#2b1a1d;color:#fff;padding:10px 14px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);text-align:center}
+@media (max-width:820px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .preview{position:static;order:-1}
+  .preview{order:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mono" aria-hidden="true">T&amp;Đ</div>
+    <div>
+      <h1>Huyền Trang &amp; Xuân Đức</h1>
+      <p>Điền tên khách → bấm “Lưu ảnh” → gửi qua Zalo</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-label="Chỉnh sửa thiệp">
+      <div class="zalo-tip" id="zaloTip">
+        Bạn đang mở trong <b>Zalo</b>. Sau khi bấm “Lưu ảnh”, hãy <b>nhấn giữ vào ảnh → Lưu ảnh</b>.
+        Nếu không lưu được, bấm dấu <b>•••</b> góc trên → <b>Mở bằng trình duyệt</b>.
+      </div>
+
+      <div class="field">
+        <span class="lbl" id="lblTpl">Loại thiệp</span>
+        <div class="seg c3" role="group" aria-labelledby="lblTpl" id="tplGroup">
+          <button type="button" data-tpl="nhagai">Nhà gái<small>28.11.2026</small></button>
+          <button type="button" data-tpl="nhatrai">Nhà trai<small>29.11.2026</small></button>
+          <button type="button" data-tpl="baohy">Báo hỷ<small>05.12.2026</small></button>
+        </div>
+      </div>
+
+      <div class="field" id="sheetField">
+        <span class="lbl" id="lblSheet">Tờ cần xuất ảnh</span>
+        <div class="seg c3" role="group" aria-labelledby="lblSheet" id="sheetGroup">
+          <button type="button" data-sheet="moi">Tờ mời<small>có tên khách</small></button>
+          <button type="button" data-sheet="baotin">Tờ báo tin<small>nền đỏ</small></button>
+          <button type="button" data-sheet="both">Cả 2 tờ<small>ghép 1 ảnh</small></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="lbl" id="lblMode">Tên khách mời</span>
+        <div class="seg c2" role="group" aria-labelledby="lblMode" id="modeGroup">
+          <button type="button" data-mode="name">Có tên khách</button>
+          <button type="button" data-mode="blank">Không có tên</button>
+        </div>
+        <input id="guestName" type="text" maxlength="80" autocomplete="off" enterkeyhint="done"
+               placeholder="Ví dụ: Gia đình anh Nguyễn Văn Nam" aria-label="Tên khách mời">
+        <div class="chips" id="chips" aria-label="Chèn nhanh danh xưng">
+          <button type="button" data-p="Gia đình ">Gia đình</button>
+          <button type="button" data-p="Ông bà ">Ông bà</button>
+          <button type="button" data-p="Anh ">Anh</button>
+          <button type="button" data-p="Chị ">Chị</button>
+          <button type="button" data-p="Bạn ">Bạn</button>
+          <button type="button" data-s=" & người thương">&amp; người thương</button>
+          <button type="button" data-clear="1">Xóa</button>
+        </div>
+        <p class="hint" id="modeHint">Tên hiện ngay trên dòng “Trân trọng kính mời”.</p>
+      </div>
+
+      <details id="batchBox">
+        <summary>Tạo nhiều thiệp cùng lúc</summary>
+        <p class="hint">Mỗi dòng một tên khách. Thiệp dùng loại và tờ đang chọn ở trên.</p>
+        <textarea id="batchList" placeholder="Gia đình anh Hoàng Minh&#10;Chị Lê Thu Hà&#10;Bạn Phạm Quốc Bảo"></textarea>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <button type="button" class="btn sec" id="batchMake">Tạo ảnh</button>
+          <button type="button" class="btn pri" id="batchSave" disabled>Lưu tất cả</button>
+        </div>
+        <div class="batch-grid" id="batchGrid"></div>
+      </details>
+    </section>
+
+    <section class="preview" aria-label="Xem trước thiệp">
+      <div class="stage"><canvas id="cv" width="1200" height="1630" aria-label="Ảnh thiệp xem trước"></canvas></div>
+      <p class="meta" id="meta">Ảnh PNG sắc nét, khổ thiệp 11,2 × 15,5 cm</p>
+    </section>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="bar-in">
+    <button type="button" class="btn pri" id="saveBtn">Lưu ảnh vào album</button>
+    <button type="button" class="btn sec" id="shareBtn">Gửi / Chia sẻ</button>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-in" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <p id="modalTitle"><b>Nhấn giữ vào ảnh → chọn “Lưu ảnh”</b> (hoặc “Thêm vào Ảnh”).</p>
+    <div id="modalImgs" style="display:grid;gap:10px"></div>
+    <button type="button" class="btn sec" id="modalClose">Đóng</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- Nội dung thiệp (theo file in) ---------- */
+const NHA_GAI = {h:"Nhà Gái", a:"Ông NGUYỄN XUÂN HỮU", b:"Bà NGUYỄN THỊ HỒNG VÂN"};
+const NHA_TRAI = {h:"Nhà Trai", a:"Ông TRẦN XUÂN LÂM", b:"Bà NGUYỄN THỊ LAN"};
+const BRIDE = "Nguyễn Thị Huyền Trang", GROOM = "Trần Xuân Đức";
+
+const TPL = {
+  nhagai:{
+    name:"Nha-gai",
+    moi:{intro:["ĐẾN DỰ BUỔI TIỆC CHUNG VUI","CÙNG GIA ĐÌNH CHÚNG TÔI TẠI"], kind:"NHÀ HÀNG",
+      venue:"Sông Lam Place", floor:"TẦNG 2", addr:["SỐ 421, PHẠM NGUYÊN DU,","P. CỬA LÒ, NGHỆ AN"], addrCaps:true,
+      time:"VÀO LÚC 11 GIỜ 00 - THỨ BẢY", date:"28 . 11 . 2026", lunar:"(NHẰM NGÀY 20 THÁNG 10 NĂM BÍNH NGỌ)"},
+    baotin:{left:NHA_GAI, right:NHA_TRAI, title:"LỄ VU QUY CỦA CON CHÚNG TÔI",
+      n1:BRIDE, r1:"Trưởng Nữ", n2:GROOM, r2:"Trưởng Nam",
+      time:"VÀO LÚC 11 GIỜ 00 - THỨ BẢY", date:"28 . 11 . 2026", lunar:"(NHẰM NGÀY 20 THÁNG 10 NĂM BÍNH NGỌ)"}
+  },
+  nhatrai:{
+    name:"Nha-trai",
+    moi:{intro:["ĐẾN DỰ BUỔI TIỆC CHUNG VUI","CÙNG GIA ĐÌNH CHÚNG TÔI TẠI"], kind:"TRUNG TÂM TIỆC CƯỚI",
+      venue:"Cung Lễ Hội", floor:"", addr:["Số 1A, Đường Trường Thi,","Thành Phố Vinh, Nghệ An"], addrCaps:false,
+      time:"VÀO LÚC 11 GIỜ 00 - CHỦ NHẬT", date:"29 . 11 . 2026", lunar:"(NHẰM NGÀY 21 THÁNG 10 NĂM BÍNH NGỌ)"},
+    baotin:{left:NHA_TRAI, right:NHA_GAI, title:"LỄ THÀNH HÔN CỦA CON CHÚNG TÔI",
+      n1:GROOM, r1:"Trưởng Nam", n2:BRIDE, r2:"Trưởng Nữ",
+      time:"VÀO LÚC 11 GIỜ 00 - CHỦ NHẬT", date:"29 . 11 . 2026", lunar:"(NHẰM NGÀY 21 THÁNG 10 NĂM BÍNH NGỌ)"}
+  },
+  baohy:{
+    name:"Bao-hy",
+    moi:{intro:["ĐẾN DỰ BUỔI TIỆC BÁO HỶ","CÙNG GIA ĐÌNH CHÚNG TÔI TẠI"], kind:"",
+      venue:"Maison De Charme", floor:"SẢNH DAISY", addr:["793/57/16 Trần Xuân Soạn,","Phường Tân Hưng, Thành phố Hồ Chí Minh"], addrCaps:false,
+      time:"VÀO LÚC 11 GIỜ 00 - THỨ BẢY", date:"05 . 12 . 2026", lunar:"(NHẰM NGÀY 27 THÁNG 10 NĂM BÍNH NGỌ)",
+      parents:[NHA_GAI, NHA_TRAI]},
+    baotin:null
+  }
+};
+
+/* ---------- Vẽ thiệp ---------- */
+const W = 1120, H = 1550;           // 11,2 × 15,5 cm @ ~254 dpi
+const SERIF = '"Cormorant Infant", Georgia, serif';
+const SCRIPT = '"Pinyon Script", "Cormorant Infant", cursive';
+const C = {
+  paper:"#fffaf5", wine:"#6a1526", frame:"#d9796b",
+  red:"#5e1220", cream:"#f3e2d0", creamSoft:"#d9bba6", redFrame:"#a8545c"
+};
+
+function setLS(ctx, px){ if ("letterSpacing" in ctx) ctx.letterSpacing = px + "px"; }
+
+function text(ctx, s, x, y, o){
+  o = o || {};
+  const fam = o.script ? SCRIPT : SERIF;
+  let size = o.size || 30;
+  const weight = o.weight || (o.script ? 400 : 600);
+  const maxW = o.maxW || (W - 200);
+  setLS(ctx, o.ls || 0);
+  ctx.font = weight + " " + size + "px " + fam;
+  let w = ctx.measureText(s).width;
+  if (w > maxW){ size = Math.max(size * maxW / w, 10); ctx.font = weight + " " + size + "px " + fam; }
+  ctx.fillStyle = o.color || C.wine;
+  ctx.textAlign = o.align || "center";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(s, x, y);
+  setLS(ctx, 0);
+  return size;
+}
+
+function monogram(ctx, cx, cy, s, color){
+  ctx.save();
+  ctx.fillStyle = color; ctx.strokeStyle = color;
+  ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+  ctx.font = "400 " + s + "px " + SERIF;
+  ctx.globalAlpha = .95;
+  ctx.fillText("T", cx - s*0.16, cy + s*0.32);
+  ctx.font = "400 " + (s*1.05) + "px " + SERIF;
+  ctx.fillText("Đ", cx + s*0.14, cy + s*0.36);
+  ctx.lineWidth = Math.max(1.5, s*0.025); ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx - s*0.05, cy + s*0.05);
+  ctx.bezierCurveTo(cx + s*0.25, cy - s*0.18, cx + s*0.55, cy - s*0.12, cx + s*0.62, cy - s*0.02);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* Bố trí theo dòng: mỗi mục có khoảng cách tới baseline trước; phần dư được chia đều để lấp kín thiệp */
+function flow(items, startY, endY){
+  const natural = items.reduce((a,it)=>a + it.gap, 0);
+  const extra = (endY - startY) - natural;
+  const weight = items.reduce((a,it)=>a + (it.flex===0 ? 0 : it.gap), 0);
+  let y = startY;
+  items.forEach(it=>{ y += it.gap + (it.flex===0 ? 0 : extra * it.gap / weight); it.y = y; });
+  return items;
+}
+
+function drawMoi(ctx, d, guest, showName){
+  ctx.fillStyle = C.paper; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = C.frame; ctx.lineWidth = 3; ctx.strokeRect(26,26,W-52,H-52);
+  monogram(ctx, W/2, 128, 120, C.wine);
+
+  const it = [];
+  it.push({gap:0, draw:y=>text(ctx,"TRÂN TRỌNG KÍNH MỜI:",W/2,y,{size:30,weight:700,ls:1})});
+  it.push({gap:118, flex:0, draw:y=>{
+    if (showName && guest){
+      text(ctx, guest, W/2, y, {script:true, size:86, maxW:900});
+    }
+    ctx.save(); ctx.strokeStyle = C.wine; ctx.globalAlpha = showName && guest ? .35 : .8;
+    ctx.lineWidth = 2.2; ctx.setLineDash([2,7]); ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(W/2-330, y+24); ctx.lineTo(W/2+330, y+24); ctx.stroke(); ctx.restore();
+  }});
+  it.push({gap:116, draw:y=>text(ctx,d.intro[0],W/2,y,{size:29,weight:700,ls:.5})});
+  it.push({gap:44, flex:0, draw:y=>text(ctx,d.intro[1],W/2,y,{size:29,weight:700,ls:.5})});
+  if (d.kind) it.push({gap:72, draw:y=>text(ctx,d.kind,W/2,y,{size:32,weight:600,ls:1})});
+  it.push({gap:d.kind?128:140, draw:y=>text(ctx,d.venue,W/2,y,{script:true,size:132,maxW:960})});
+  if (d.floor) it.push({gap:88, draw:y=>text(ctx,d.floor,W/2,y,{size:40,weight:600,ls:1.5})});
+  it.push({gap:d.floor?68:96, draw:y=>text(ctx,d.addr[0],W/2,y,{size:d.addrCaps?29:33,weight:500})});
+  it.push({gap:42, flex:0, draw:y=>text(ctx,d.addr[1],W/2,y,{size:d.addrCaps?29:33,weight:500})});
+  it.push({gap:98, draw:y=>text(ctx,d.time,W/2,y,{size:44,weight:600})});
+  it.push({gap:92, draw:y=>text(ctx,d.date,W/2,y,{size:78,weight:600,ls:2})});
+  it.push({gap:60, flex:0, draw:y=>text(ctx,d.lunar,W/2,y,{size:25,weight:600})});
+  it.push({gap:90, draw:y=>text(ctx,"SỰ HIỆN DIỆN CỦA QUÝ KHÁCH",W/2,y,{size:27,weight:700})});
+  it.push({gap:42, flex:0, draw:y=>text(ctx,"LÀ NIỀM VINH DỰ CHO GIA ĐÌNH CHÚNG TÔI",W/2,y,{size:27,weight:700})});
+  if (d.parents){
+    it.push({gap:84, draw:y=>parents(ctx, d.parents, y, C.wine, C.wine, .78)});
+  }
+  flow(it, 300, d.parents ? 1360 : 1440).forEach(i=>i.draw(i.y));
+}
+
+function parents(ctx, pair, y, colA, colB, scale){
+  scale = scale || 1;
+  [[W*0.28, pair[0]],[W*0.72, pair[1]]].forEach(([x,p])=>{
+    text(ctx, p.h, x, y, {size:24*scale+4, weight:500, color:colA, maxW:440});
+    text(ctx, p.a, x, y + 40*scale+6, {size:24*scale+4, weight:700, color:colB, maxW:440});
+    text(ctx, p.b, x, y + 78*scale+12, {size:24*scale+4, weight:700, color:colB, maxW:440});
+  });
+}
+
+function drawBaotin(ctx, d){
+  ctx.fillStyle = C.red; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = C.redFrame; ctx.lineWidth = 2.5; ctx.strokeRect(26,26,W-52,H-52);
+  monogram(ctx, W/2, 128, 120, C.cream);
+  const cr = C.cream, cs = C.creamSoft;
+  const it = [];
+  it.push({gap:0, draw:y=>parents(ctx,[d.left,d.right],y,cs,cr,1)});
+  it.push({gap:200, draw:y=>text(ctx,"TRÂN TRỌNG BÁO TIN",W/2,y,{size:36,weight:500,color:cr,ls:1})});
+  it.push({gap:52, flex:0, draw:y=>text(ctx,d.title,W/2,y,{size:36,weight:500,color:cr,ls:1})});
+  it.push({gap:150, draw:y=>text(ctx,d.n1,W/2,y,{script:true,size:104,color:cr,maxW:960})});
+  it.push({gap:62, flex:0, draw:y=>text(ctx,d.r1,W/2,y,{size:32,weight:500,color:cs})});
+  it.push({gap:110, draw:y=>text(ctx,"&",W/2,y,{size:84,weight:400,color:cr})});
+  it.push({gap:140, draw:y=>text(ctx,d.n2,W/2,y,{script:true,size:104,color:cr,maxW:960})});
+  it.push({gap:62, flex:0, draw:y=>text(ctx,d.r2,W/2,y,{size:32,weight:500,color:cs})});
+  it.push({gap:120, draw:y=>text(ctx,"HÔN LỄ ĐƯỢC CỬ HÀNH",W/2,y,{size:34,weight:500,color:cr,ls:1})});
+  it.push({gap:58, flex:0, draw:y=>text(ctx,d.time,W/2,y,{size:36,weight:500,color:cr,ls:.5})});
+  it.push({gap:100, draw:y=>text(ctx,d.date,W/2,y,{size:80,weight:500,color:cr,ls:2})});
+  it.push({gap:60, flex:0, draw:y=>text(ctx,d.lunar,W/2,y,{size:25,weight:500,color:cs})});
+  flow(it, 300, 1440).forEach(i=>i.draw(i.y));
+}
+
+function sheetCanvas(kind, tpl, guest, showName){
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const ctx = c.getContext("2d");
+  if (kind === "baotin") drawBaotin(ctx, TPL[tpl].baotin); else drawMoi(ctx, TPL[tpl].moi, guest, showName);
+  return c;
+}
+
+/* Ghép thiệp lên nền, có bóng đổ nhẹ – đẹp hơn khi gửi Zalo */
+function compose(target, st, guest){
+  const kinds = st.sheet === "both" && TPL[st.tpl].baotin ? ["moi","baotin"]
+              : (st.sheet === "baotin" && TPL[st.tpl].baotin ? ["baotin"] : ["moi"]);
+  const pad = 44, gap = 44;
+  const cw = pad*2 + kinds.length*W + (kinds.length-1)*gap, ch = pad*2 + H;
+  target.width = cw; target.height = ch;
+  const ctx = target.getContext("2d");
+  ctx.fillStyle = "#efe7e2"; ctx.fillRect(0,0,cw,ch);
+  kinds.forEach((k,i)=>{
+    const x = pad + i*(W+gap);
+    ctx.save(); ctx.shadowColor = "rgba(60,20,25,.22)"; ctx.shadowBlur = 30; ctx.shadowOffsetY = 10;
+    ctx.fillStyle = "#fff"; ctx.fillRect(x, pad, W, H); ctx.restore();
+    ctx.drawImage(sheetCanvas(k, st.tpl, guest, st.mode === "name"), x, pad);
+  });
+  return kinds;
+}
+
+/* ---------- Trạng thái & giao diện ---------- */
+const $ = id => document.getElementById(id);
+const cv = $("cv");
+const UA = navigator.userAgent || "";
+const IS_ZALO = /zalo/i.test(UA);
+const IS_IOS = /iPhone|iPad|iPod/i.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const IS_ANDROID = /Android/i.test(UA);
+if (IS_ZALO) document.documentElement.classList.add("is-zalo");
+
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+};
+
+const st = { tpl:"nhagai", sheet:"moi", mode:"name" };
+const qs = new URLSearchParams(location.search);
+const savedTpl = qs.get("mau") || store.get("tc_tpl");
+if (TPL[savedTpl]) st.tpl = savedTpl;
+const savedSheet = store.get("tc_sheet"); if (["moi","baotin","both"].includes(savedSheet)) st.sheet = savedSheet;
+if (qs.get("ten")) $("guestName").value = qs.get("ten");
+const savedList = store.get("tc_list"); if (savedList) $("batchList").value = savedList;
+
+function guestName(){ return $("guestName").value.replace(/\s+/g," ").trim(); }
+
+function syncUI(){
+  document.querySelectorAll("#tplGroup button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.tpl===st.tpl));
+  const hasBaotin = !!TPL[st.tpl].baotin;
+  $("sheetField").hidden = !hasBaotin;
+  document.querySelectorAll("#sheetGroup button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.sheet===st.sheet));
+  document.querySelectorAll("#modeGroup button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.mode===st.mode));
+  const blank = st.mode === "blank";
+  $("guestName").disabled = blank;
+  $("chips").hidden = blank;
+  $("modeHint").textContent = blank
+    ? "Thiệp để trống dòng tên, dùng gửi chung hoặc để viết tay."
+    : "Tên hiện ngay trên dòng “Trân trọng kính mời”.";
+  const onlyBaotin = hasBaotin && st.sheet === "baotin";
+  $("modeGroup").parentElement.style.opacity = onlyBaotin ? .5 : 1;
+}
+
+let raf = 0;
+function render(){
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(()=>{
+    const kinds = compose(cv, st, guestName());
+    cv.classList.toggle("wide", kinds.length > 1);
+    $("meta").textContent = kinds.length > 1
+      ? "2 tờ ghép thành 1 ảnh PNG · mỗi tờ 11,2 × 15,5 cm"
+      : "Ảnh PNG sắc nét · khổ thiệp 11,2 × 15,5 cm";
+  });
+}
+
+function update(){ syncUI(); render(); store.set("tc_tpl", st.tpl); store.set("tc_sheet", st.sheet); }
+
+$("tplGroup").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return; st.tpl=b.dataset.tpl; update(); });
+$("sheetGroup").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return; st.sheet=b.dataset.sheet; update(); });
+$("modeGroup").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return; st.mode=b.dataset.mode; update(); });
+$("guestName").addEventListener("input", render);
+$("chips").addEventListener("click", e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const inp=$("guestName"); let v=inp.value.trim();
+  if (b.dataset.clear){ inp.value=""; }
+  else if (b.dataset.p){ v = v.replace(/^(Gia đình|Ông bà|Anh|Chị|Bạn)\s+/i,""); inp.value = b.dataset.p + v; }
+  else if (b.dataset.s){ if(!v.endsWith(b.dataset.s.trim())) inp.value = v + b.dataset.s; }
+  inp.focus(); render();
+});
+
+/* ---------- Lưu / chia sẻ ảnh ---------- */
+function slug(s){
+  return (s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D")
+    .replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50);
+}
+function fileName(name){
+  return "Thiep-" + TPL[st.tpl].name + (st.mode==="name" && name ? "-" + slug(name) : "") + ".png";
+}
+function toFile(canvas, name){
+  return new Promise((res,rej)=>canvas.toBlob(b=> b ? res(new File([b], name, {type:"image/png"})) : rej(new Error("toBlob")), "image/png"));
+}
+function toast(msg, ms){
+  const t=$("toast"); t.textContent=msg; t.hidden=false;
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true, ms||3200);
+}
+function showModal(files){
+  const box=$("modalImgs"); box.innerHTML="";
+  files.forEach(f=>{
+    const img=new Image(); img.alt=f.name;
+    const r=new FileReader(); r.onload=()=>{ img.src=r.result; }; r.readAsDataURL(f);  // data: URL để nhấn giữ lưu được trong Zalo
+    box.appendChild(img);
+  });
+  $("modal").hidden=false;
+}
+$("modalClose").addEventListener("click", ()=>{ $("modal").hidden=true; });
+$("modal").addEventListener("click", e=>{ if(e.target.id==="modal") $("modal").hidden=true; });
+
+function download(file){
+  const url=URL.createObjectURL(file);
+  const a=document.createElement("a"); a.href=url; a.download=file.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+async function share(files){
+  if (navigator.canShare && navigator.canShare({files})){
+    await navigator.share({files});
+    return true;
+  }
+  return false;
+}
+
+/* iPhone: bảng chia sẻ → “Lưu hình ảnh” vào Ảnh. Android: tải xuống, ảnh hiện trong Thư viện/Album.
+   Trong Zalo: hiện ảnh để nhấn giữ → Lưu ảnh. */
+async function saveFiles(files){
+  if (IS_ZALO){ showModal(files); return; }
+  if (IS_IOS){
+    try{ if (await share(files)){ toast("Chọn “Lưu hình ảnh” để lưu vào album Ảnh"); return; } }
+    catch(e){ if (e && e.name==="AbortError") return; }
+    showModal(files); return;
+  }
+  for (let i=0;i<files.length;i++){ download(files[i]); if (files.length>1) await new Promise(r=>setTimeout(r,350)); }
+  toast(IS_ANDROID ? "Đã lưu ảnh. Mở Thư viện/Album → thư mục Tải xuống (Download)" : "Đã tải ảnh về máy");
+}
+
+async function currentFile(){
+  const c=document.createElement("canvas"); compose(c, st, guestName());
+  return toFile(c, fileName(guestName()));
+}
+
+$("saveBtn").addEventListener("click", async ()=>{
+  if (st.mode==="name" && !guestName() && st.sheet!=="baotin"){ $("guestName").focus(); toast("Hãy nhập tên khách, hoặc chọn “Không có tên”"); return; }
+  const b=$("saveBtn"); b.disabled=true;
+  try{ await saveFiles([await currentFile()]); } catch(e){ toast("Không tạo được ảnh, hãy thử lại"); }
+  b.disabled=false;
+});
+$("shareBtn").addEventListener("click", async ()=>{
+  const b=$("shareBtn"); b.disabled=true;
+  try{
+    const f=await currentFile();
+    if (IS_ZALO){ showModal([f]); }
+    else if (!(await share([f]))){ showModal([f]); toast("Trình duyệt chưa hỗ trợ chia sẻ trực tiếp. Hãy lưu ảnh rồi gửi qua Zalo."); }
+  }catch(e){ if(!(e && e.name==="AbortError")) toast("Không chia sẻ được, hãy dùng “Lưu ảnh”"); }
+  b.disabled=false;
+});
+
+/* ---------- Tạo hàng loạt ---------- */
+let batchFiles = [];
+$("batchList").addEventListener("input", ()=>store.set("tc_list", $("batchList").value));
+$("batchMake").addEventListener("click", async ()=>{
+  const names=$("batchList").value.split(/\r?\n/).map(s=>s.replace(/\s+/g," ").trim()).filter(Boolean);
+  if (!names.length){ toast("Dán danh sách tên, mỗi dòng một người"); return; }
+  if (names.length>60){ toast("Mỗi lần tạo tối đa 60 thiệp"); return; }
+  const grid=$("batchGrid"); grid.innerHTML=""; batchFiles=[];
+  $("batchMake").disabled=true; $("batchSave").disabled=true;
+  const s={...st, mode:"name", sheet: st.sheet==="baotin" ? "moi" : st.sheet};
+  const c=document.createElement("canvas");
+  for (let i=0;i<names.length;i++){
+    $("batchMake").textContent="Đang tạo " + (i+1) + "/" + names.length;
+    compose(c, s, names[i]);
+    const f=await toFile(c, String(i+1).padStart(2,"0") + "-Thiep-" + slug(names[i]) + ".png");
+    batchFiles.push(f);
+    const fig=document.createElement("figure");
+    const img=new Image(); img.alt=names[i]; img.src=URL.createObjectURL(f);
+    img.addEventListener("click", ()=>saveFiles([f]));
+    const cap=document.createElement("figcaption"); cap.textContent=names[i];
+    fig.append(img,cap); grid.appendChild(fig);
+    await new Promise(r=>setTimeout(r,0));
+  }
+  $("batchMake").textContent="Tạo lại";
+  $("batchMake").disabled=false; $("batchSave").disabled=false;
+  $("batchSave").textContent="Lưu tất cả (" + batchFiles.length + ")";
+  toast("Đã tạo " + batchFiles.length + " thiệp. Chạm vào từng ảnh để lưu riêng.");
+});
+$("batchSave").addEventListener("click", ()=>{ if(batchFiles.length) saveFiles(batchFiles); });
+
+/* ---------- Khởi động: chờ font có dấu tiếng Việt rồi vẽ ---------- */
+update();
+const sample = "Đức Huyền Trưởng Nữ ĐẾN DỰ BUỔI TIỆC Ố Ữ";
+Promise.all([
+  document.fonts.load('400 80px "Pinyon Script"', sample),
+  document.fonts.load('400 40px "Cormorant Infant"', sample),
+  document.fonts.load('500 40px "Cormorant Infant"', sample),
+  document.fonts.load('600 40px "Cormorant Infant"', sample),
+  document.fonts.load('700 40px "Cormorant Infant"', sample)
+]).catch(()=>{}).then(render);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+})();
+</script>
+</body>
+</html>
