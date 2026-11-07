@@ -78,7 +78,11 @@ details[open]{padding-bottom:14px}
 .modal{position:fixed;inset:0;z-index:50;background:rgba(30,12,16,.82);display:grid;place-items:center;
   padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
 .modal-in{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:100%;overflow:auto;padding:14px;display:grid;gap:10px}
-.modal-in img{width:100%;height:auto;border-radius:6px;-webkit-touch-callout:default;user-select:auto}
+.modal-in{-webkit-user-select:none;user-select:none}
+.modal-in img{width:100%;height:auto;border-radius:6px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.zalo-help{display:none;background:#fff6e6;border:1px solid #f0d8a8;color:#6b4b10;border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.5}
+.is-zalo .zalo-help{display:grid;gap:8px}
+.zalo-help ol{margin:0;padding-left:20px}
 .modal-in p{margin:0;font-size:14px}
 .modal-in b{color:var(--wine)}
 .toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;
@@ -174,7 +178,17 @@ details[open]{padding-bottom:14px}
 
 <div class="modal" id="modal" hidden>
   <div class="modal-in" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <p id="modalTitle"><b>Nhấn giữ vào ảnh → chọn “Lưu ảnh”</b> (hoặc “Thêm vào Ảnh”).</p>
+    <div class="zalo-help">
+      <div><b>Zalo đang chặn lưu ảnh từ trang web.</b> Làm như sau để lưu được:</div>
+      <ol>
+        <li>Bấm <b>Sao chép link</b> bên dưới</li>
+        <li>Mở <b>Safari</b> (hoặc Chrome), dán link vào ô địa chỉ</li>
+        <li>Bấm <b>Lưu ảnh vào album</b> → chọn <b>Lưu hình ảnh</b></li>
+      </ol>
+      <div>Hoặc bấm dấu <b>•••</b> góc trên bên phải → <b>Mở bằng trình duyệt</b>.</div>
+      <button type="button" class="btn pri" id="copyLink">Sao chép link (giữ nguyên tên khách)</button>
+    </div>
+    <p id="modalTitle"><b>Nhấn giữ vào ảnh → chọn “Lưu vào Ảnh”</b> hoặc “Lưu ảnh”.</p>
     <div id="modalImgs" style="display:grid;gap:10px"></div>
     <button type="button" class="btn sec" id="modalClose">Đóng</button>
   </div>
@@ -413,6 +427,7 @@ function render(){
   raf = requestAnimationFrame(()=>{
     const kinds = compose(cv, st, guestName());
     cv.classList.toggle("wide", kinds.length > 1);
+    warmCache();
     $("meta").textContent = kinds.length > 1
       ? "2 tờ ghép thành 1 ảnh PNG · mỗi tờ 11,2 × 15,5 cm"
       : "Ảnh PNG sắc nét · khổ thiệp 11,2 × 15,5 cm";
@@ -478,8 +493,7 @@ async function share(files){
 /* iPhone: bảng chia sẻ → “Lưu hình ảnh” vào Ảnh. Android: tải xuống, ảnh hiện trong Thư viện/Album.
    Trong Zalo: hiện ảnh để nhấn giữ → Lưu ảnh. */
 async function saveFiles(files){
-  if (IS_ZALO){ showModal(files); return; }
-  if (IS_IOS){
+  if (IS_IOS || IS_ZALO){
     try{ if (await share(files)){ toast("Chọn “Lưu hình ảnh” để lưu vào album Ảnh"); return; } }
     catch(e){ if (e && e.name==="AbortError") return; }
     showModal(files); return;
@@ -488,10 +502,36 @@ async function saveFiles(files){
   toast(IS_ANDROID ? "Đã lưu ảnh. Mở Thư viện/Album → thư mục Tải xuống (Download)" : "Đã tải ảnh về máy");
 }
 
+function stateKey(){ return [st.tpl, st.sheet, st.mode, guestName()].join("|"); }
+let cached = {key:"", file:null}, cacheTimer = 0;
+function warmCache(){
+  clearTimeout(cacheTimer);
+  cacheTimer = setTimeout(async ()=>{
+    const key = stateKey();
+    try{ const f = await toFile(cv, fileName(guestName())); if (key === stateKey()) cached = {key, file:f}; }catch(e){}
+  }, 250);
+}
 async function currentFile(){
+  if (cached.file && cached.key === stateKey()) return cached.file;
   const c=document.createElement("canvas"); compose(c, st, guestName());
   return toFile(c, fileName(guestName()));
 }
+function shareLink(){
+  const u = new URL(location.href.split("?")[0]);
+  u.searchParams.set("mau", st.tpl);
+  if (st.mode==="name" && guestName()) u.searchParams.set("ten", guestName());
+  return u.toString();
+}
+$("copyLink").addEventListener("click", async ()=>{
+  const link = shareLink();
+  try{ await navigator.clipboard.writeText(link); toast("Đã sao chép link. Mở Safari và dán vào ô địa chỉ."); }
+  catch(e){
+    const t=document.createElement("textarea"); t.value=link; document.body.appendChild(t); t.select();
+    try{ document.execCommand("copy"); toast("Đã sao chép link. Mở Safari và dán vào ô địa chỉ."); }
+    catch(_){ toast(link, 8000); }
+    t.remove();
+  }
+});
 
 $("saveBtn").addEventListener("click", async ()=>{
   if (st.mode==="name" && !guestName() && st.sheet!=="baotin"){ $("guestName").focus(); toast("Hãy nhập tên khách, hoặc chọn “Không có tên”"); return; }
@@ -503,8 +543,7 @@ $("shareBtn").addEventListener("click", async ()=>{
   const b=$("shareBtn"); b.disabled=true;
   try{
     const f=await currentFile();
-    if (IS_ZALO){ showModal([f]); }
-    else if (!(await share([f]))){ showModal([f]); toast("Trình duyệt chưa hỗ trợ chia sẻ trực tiếp. Hãy lưu ảnh rồi gửi qua Zalo."); }
+    if (!(await share([f]))){ showModal([f]); toast("Trình duyệt chưa hỗ trợ chia sẻ trực tiếp. Hãy lưu ảnh rồi gửi qua Zalo."); }
   }catch(e){ if(!(e && e.name==="AbortError")) toast("Không chia sẻ được, hãy dùng “Lưu ảnh”"); }
   b.disabled=false;
 });
