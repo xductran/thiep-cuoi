@@ -196,7 +196,7 @@ const TPL = {
       venue:"Sông Lam Place", floor:"TẦNG 2", addr:["SỐ 421, PHẠM NGUYÊN DU,","P. CỬA LÒ, NGHỆ AN"], addrCaps:true,
       time:"VÀO LÚC 11 GIỜ 00 - THỨ BẢY", date:"28 . 11 . 2026", lunar:"(NHẰM NGÀY 20 THÁNG 10 NĂM BÍNH NGỌ)"},
     baotin:{left:NHA_GAI, right:NHA_TRAI, title:"LỄ VU QUY CỦA CON CHÚNG TÔI",
-      n1:BRIDE, r1:"Trưởng Nữ", n2:GROOM, r2:"Trưởng Nam",
+      n1:GROOM, r1:"Trưởng Nam", n2:BRIDE, r2:"Trưởng Nữ",
       time:"VÀO LÚC 11 GIỜ 00 - THỨ BẢY", date:"28 . 11 . 2026", lunar:"(NHẰM NGÀY 20 THÁNG 10 NĂM BÍNH NGỌ)"}
   },
   nhatrai:{
@@ -214,7 +214,9 @@ const TPL = {
       venue:"Maison De Charme", floor:"SẢNH DAISY", addr:["793/57/16 Trần Xuân Soạn,","Phường Tân Hưng, Thành phố Hồ Chí Minh"], addrCaps:false,
       time:"VÀO LÚC 11 GIỜ 00 - THỨ BẢY", date:"05 . 12 . 2026", lunar:"(NHẰM NGÀY 27 THÁNG 10 NĂM BÍNH NGỌ)",
       parents:[NHA_GAI, NHA_TRAI]},
-    baotin:null
+    baotin:{left:NHA_GAI, right:NHA_TRAI, head:"TRÂN TRỌNG BÁO HỶ", title:"LỄ THÀNH HÔN CỦA CON CHÚNG TÔI",
+      n1:GROOM, r1:"Trưởng Nam", n2:BRIDE, r2:"Trưởng Nữ", event:"TIỆC BÁO HỶ ĐƯỢC TỔ CHỨC",
+      time:"VÀO LÚC 11 GIỜ 00 - THỨ BẢY", date:"05 . 12 . 2026", lunar:"(NHẰM NGÀY 27 THÁNG 10 NĂM BÍNH NGỌ)"}
   }
 };
 
@@ -224,7 +226,7 @@ const SERIF = '"Cormorant Infant", Georgia, serif';
 const SCRIPT = '"Pinyon Script", "Cormorant Infant", cursive';
 const C = {
   paper:"#fffaf5", wine:"#6a1526", frame:"#d9796b",
-  red:"#5e1220", cream:"#f3e2d0", creamSoft:"#d9bba6", redFrame:"#a8545c"
+  red:"#5e1220", cream:"#f3e2d0", creamSoft:"#ecd3c0", redFrame:"#a8545c"
 };
 
 function setLS(ctx, px){ if ("letterSpacing" in ctx) ctx.letterSpacing = px + "px"; }
@@ -243,6 +245,9 @@ function text(ctx, s, x, y, o){
   ctx.textAlign = o.align || "center";
   ctx.textBaseline = "alphabetic";
   ctx.fillText(s, x, y);
+  ctx.strokeStyle = ctx.fillStyle; ctx.lineJoin = "round";
+  ctx.lineWidth = o.script ? size*0.02 : size*(weight>=700 ? 0.018 : 0.026);
+  ctx.strokeText(s, x, y);
   setLS(ctx, 0);
   return size;
 }
@@ -277,42 +282,42 @@ function flow(items, startY, endY){
 function drawMoi(ctx, d, guest, showName){
   ctx.fillStyle = C.paper; ctx.fillRect(0,0,W,H);
   ctx.strokeStyle = C.frame; ctx.lineWidth = 3; ctx.strokeRect(26,26,W-52,H-52);
-  monogram(ctx, W/2, 128, 120, C.wine);
+  monogram(ctx, W/2, 124, 112, C.wine);
 
   const it = [];
-  it.push({gap:0, draw:y=>text(ctx,"TRÂN TRỌNG KÍNH MỜI:",W/2,y,{size:30,weight:700,ls:1})});
+  it.push({gap:0, draw:y=>text(ctx,"TRÂN TRỌNG KÍNH MỜI:",W/2,y,{size:35,weight:700,ls:1})});
   it.push({gap:118, flex:0, draw:y=>{
     if (showName && guest){
-      text(ctx, guest, W/2, y, {script:true, size:86, maxW:900});
+      text(ctx, guest, W/2, y, {script:true, size:98, maxW:920});
     }
     ctx.save(); ctx.strokeStyle = C.wine; ctx.globalAlpha = showName && guest ? .35 : .8;
     ctx.lineWidth = 2.2; ctx.setLineDash([2,7]); ctx.lineCap = "round";
     ctx.beginPath(); ctx.moveTo(W/2-330, y+24); ctx.lineTo(W/2+330, y+24); ctx.stroke(); ctx.restore();
   }});
-  it.push({gap:116, draw:y=>text(ctx,d.intro[0],W/2,y,{size:29,weight:700,ls:.5})});
-  it.push({gap:44, flex:0, draw:y=>text(ctx,d.intro[1],W/2,y,{size:29,weight:700,ls:.5})});
-  if (d.kind) it.push({gap:72, draw:y=>text(ctx,d.kind,W/2,y,{size:32,weight:600,ls:1})});
-  it.push({gap:d.kind?128:140, draw:y=>text(ctx,d.venue,W/2,y,{script:true,size:132,maxW:960})});
-  if (d.floor) it.push({gap:88, draw:y=>text(ctx,d.floor,W/2,y,{size:40,weight:600,ls:1.5})});
-  it.push({gap:d.floor?68:96, draw:y=>text(ctx,d.addr[0],W/2,y,{size:d.addrCaps?29:33,weight:500})});
-  it.push({gap:42, flex:0, draw:y=>text(ctx,d.addr[1],W/2,y,{size:d.addrCaps?29:33,weight:500})});
-  it.push({gap:98, draw:y=>text(ctx,d.time,W/2,y,{size:44,weight:600})});
-  it.push({gap:92, draw:y=>text(ctx,d.date,W/2,y,{size:78,weight:600,ls:2})});
-  it.push({gap:60, flex:0, draw:y=>text(ctx,d.lunar,W/2,y,{size:25,weight:600})});
-  it.push({gap:90, draw:y=>text(ctx,"SỰ HIỆN DIỆN CỦA QUÝ KHÁCH",W/2,y,{size:27,weight:700})});
-  it.push({gap:42, flex:0, draw:y=>text(ctx,"LÀ NIỀM VINH DỰ CHO GIA ĐÌNH CHÚNG TÔI",W/2,y,{size:27,weight:700})});
+  it.push({gap:116, draw:y=>text(ctx,d.intro[0],W/2,y,{size:33,weight:700,ls:.5})});
+  it.push({gap:48, flex:0, draw:y=>text(ctx,d.intro[1],W/2,y,{size:33,weight:700,ls:.5})});
+  if (d.kind) it.push({gap:72, draw:y=>text(ctx,d.kind,W/2,y,{size:37,weight:700,ls:1})});
+  it.push({gap:d.kind?128:140, draw:y=>text(ctx,d.venue,W/2,y,{script:true,size:140,maxW:980})});
+  if (d.floor) it.push({gap:88, draw:y=>text(ctx,d.floor,W/2,y,{size:45,weight:700,ls:1.5})});
+  it.push({gap:d.floor?68:96, draw:y=>text(ctx,d.addr[0],W/2,y,{size:d.addrCaps?33:38,weight:600})});
+  it.push({gap:47, flex:0, draw:y=>text(ctx,d.addr[1],W/2,y,{size:d.addrCaps?33:38,weight:600})});
+  it.push({gap:98, draw:y=>text(ctx,d.time,W/2,y,{size:49,weight:700})});
+  it.push({gap:92, draw:y=>text(ctx,d.date,W/2,y,{size:86,weight:700,ls:2})});
+  it.push({gap:62, flex:0, draw:y=>text(ctx,d.lunar,W/2,y,{size:30,weight:600})});
+  it.push({gap:90, draw:y=>text(ctx,"SỰ HIỆN DIỆN CỦA QUÝ KHÁCH",W/2,y,{size:31,weight:700})});
+  it.push({gap:47, flex:0, draw:y=>text(ctx,"LÀ NIỀM VINH DỰ CHO GIA ĐÌNH CHÚNG TÔI",W/2,y,{size:31,weight:700})});
   if (d.parents){
-    it.push({gap:84, draw:y=>parents(ctx, d.parents, y, C.wine, C.wine, .78)});
+    it.push({gap:84, draw:y=>parents(ctx, d.parents, y, C.wine, C.wine, .92)});
   }
-  flow(it, 300, d.parents ? 1360 : 1440).forEach(i=>i.draw(i.y));
+  flow(it, 295, d.parents ? 1345 : 1440).forEach(i=>i.draw(i.y));
 }
 
 function parents(ctx, pair, y, colA, colB, scale){
   scale = scale || 1;
   [[W*0.28, pair[0]],[W*0.72, pair[1]]].forEach(([x,p])=>{
-    text(ctx, p.h, x, y, {size:24*scale+4, weight:500, color:colA, maxW:440});
-    text(ctx, p.a, x, y + 40*scale+6, {size:24*scale+4, weight:700, color:colB, maxW:440});
-    text(ctx, p.b, x, y + 78*scale+12, {size:24*scale+4, weight:700, color:colB, maxW:440});
+    text(ctx, p.h, x, y, {size:26*scale+4, weight:600, color:colA, maxW:440});
+    text(ctx, p.a, x, y + 40*scale+6, {size:26*scale+4, weight:700, color:colB, maxW:440});
+    text(ctx, p.b, x, y + 78*scale+12, {size:26*scale+4, weight:700, color:colB, maxW:440});
   });
 }
 
@@ -322,18 +327,18 @@ function drawBaotin(ctx, d){
   monogram(ctx, W/2, 128, 120, C.cream);
   const cr = C.cream, cs = C.creamSoft;
   const it = [];
-  it.push({gap:0, draw:y=>parents(ctx,[d.left,d.right],y,cs,cr,1)});
-  it.push({gap:200, draw:y=>text(ctx,"TRÂN TRỌNG BÁO TIN",W/2,y,{size:36,weight:500,color:cr,ls:1})});
-  it.push({gap:52, flex:0, draw:y=>text(ctx,d.title,W/2,y,{size:36,weight:500,color:cr,ls:1})});
-  it.push({gap:150, draw:y=>text(ctx,d.n1,W/2,y,{script:true,size:104,color:cr,maxW:960})});
-  it.push({gap:62, flex:0, draw:y=>text(ctx,d.r1,W/2,y,{size:32,weight:500,color:cs})});
-  it.push({gap:110, draw:y=>text(ctx,"&",W/2,y,{size:84,weight:400,color:cr})});
-  it.push({gap:140, draw:y=>text(ctx,d.n2,W/2,y,{script:true,size:104,color:cr,maxW:960})});
-  it.push({gap:62, flex:0, draw:y=>text(ctx,d.r2,W/2,y,{size:32,weight:500,color:cs})});
-  it.push({gap:120, draw:y=>text(ctx,"HÔN LỄ ĐƯỢC CỬ HÀNH",W/2,y,{size:34,weight:500,color:cr,ls:1})});
-  it.push({gap:58, flex:0, draw:y=>text(ctx,d.time,W/2,y,{size:36,weight:500,color:cr,ls:.5})});
-  it.push({gap:100, draw:y=>text(ctx,d.date,W/2,y,{size:80,weight:500,color:cr,ls:2})});
-  it.push({gap:60, flex:0, draw:y=>text(ctx,d.lunar,W/2,y,{size:25,weight:500,color:cs})});
+  it.push({gap:0, draw:y=>parents(ctx,[d.left,d.right],y,cs,cr,1.12)});
+  it.push({gap:200, draw:y=>text(ctx,d.head||"TRÂN TRỌNG BÁO TIN",W/2,y,{size:41,weight:600,color:cr,ls:1})});
+  it.push({gap:52, flex:0, draw:y=>text(ctx,d.title,W/2,y,{size:41,weight:600,color:cr,ls:1})});
+  it.push({gap:150, draw:y=>text(ctx,d.n1,W/2,y,{script:true,size:112,color:cr,maxW:980})});
+  it.push({gap:62, flex:0, draw:y=>text(ctx,d.r1,W/2,y,{size:37,weight:600,color:cs})});
+  it.push({gap:110, draw:y=>text(ctx,"&",W/2,y,{size:88,weight:500,color:cr})});
+  it.push({gap:140, draw:y=>text(ctx,d.n2,W/2,y,{script:true,size:112,color:cr,maxW:980})});
+  it.push({gap:62, flex:0, draw:y=>text(ctx,d.r2,W/2,y,{size:37,weight:600,color:cs})});
+  it.push({gap:120, draw:y=>text(ctx,d.event||"HÔN LỄ ĐƯỢC CỬ HÀNH",W/2,y,{size:39,weight:600,color:cr,ls:1})});
+  it.push({gap:58, flex:0, draw:y=>text(ctx,d.time,W/2,y,{size:42,weight:600,color:cr,ls:.5})});
+  it.push({gap:100, draw:y=>text(ctx,d.date,W/2,y,{size:88,weight:600,color:cr,ls:2})});
+  it.push({gap:60, flex:0, draw:y=>text(ctx,d.lunar,W/2,y,{size:30,weight:600,color:cs})});
   flow(it, 300, 1440).forEach(i=>i.draw(i.y));
 }
 
