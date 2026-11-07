@@ -110,6 +110,7 @@ details[open]{padding-bottom:14px}
       <div class="zalo-tip" id="zaloTip">
         Bạn đang mở trong <b>Zalo</b>. Sau khi bấm “Lưu ảnh”, hãy <b>nhấn giữ vào ảnh → Lưu ảnh</b>.
         Nếu không lưu được, bấm dấu <b>•••</b> góc trên → <b>Mở bằng trình duyệt</b>.
+        <button type="button" class="btn pri" id="openBrowserTop" style="width:100%;margin-top:8px">Mở bằng Safari / Chrome</button>
       </div>
 
       <div class="field">
@@ -186,7 +187,9 @@ details[open]{padding-bottom:14px}
         <li>Bấm <b>Lưu ảnh vào album</b> → chọn <b>Lưu hình ảnh</b></li>
       </ol>
       <div>Hoặc bấm dấu <b>•••</b> góc trên bên phải → <b>Mở bằng trình duyệt</b>.</div>
-      <button type="button" class="btn pri" id="copyLink">Sao chép link (giữ nguyên tên khách)</button>
+      <button type="button" class="btn pri" id="openBrowser">Mở bằng Safari / Chrome</button>
+      <button type="button" class="btn sec" id="copyImg">Sao chép ảnh (dán thẳng vào Zalo)</button>
+      <button type="button" class="btn sec" id="copyLink">Sao chép link (giữ nguyên tên khách)</button>
     </div>
     <p id="modalTitle"><b>Nhấn giữ vào ảnh → chọn “Lưu vào Ảnh”</b> hoặc “Lưu ảnh”.</p>
     <div id="modalImgs" style="display:grid;gap:10px"></div>
@@ -516,6 +519,30 @@ async function currentFile(){
   const c=document.createElement("canvas"); compose(c, st, guestName());
   return toFile(c, fileName(guestName()));
 }
+function sessionStorageGet(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } }
+function sessionStorageSet(k,v){ try{ sessionStorage.setItem(k,v); }catch(e){} }
+/* iPhone: scheme x-safari-https:// mở thẳng Safari. Android: intent:// mở Chrome. */
+function openInBrowser(){
+  const link = shareLink();
+  if (IS_IOS){ location.href = "x-safari-" + link; return true; }
+  if (IS_ANDROID){
+    const u = new URL(link);
+    location.href = "intent://" + u.host + u.pathname + u.search + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent(link) + ";end";
+    return true;
+  }
+  return false;
+}
+["openBrowser","openBrowserTop"].forEach(id=>$(id).addEventListener("click", ()=>{
+  if (!openInBrowser()) toast("Bấm ••• góc trên → Mở bằng trình duyệt");
+  else setTimeout(()=>{ if (!document.hidden) toast("Chưa mở được. Bấm ••• góc trên → Mở bằng trình duyệt", 5000); }, 1500);
+}));
+$("copyImg").addEventListener("click", async ()=>{
+  try{
+    const filePromise = currentFile();
+    await navigator.clipboard.write([new ClipboardItem({"image/png": filePromise.then(f=>new Blob([f],{type:"image/png"}))})]);
+    toast("Đã sao chép ảnh. Vào khung chat Zalo, nhấn giữ ô nhập tin → Dán.", 5000);
+  }catch(e){ toast("Zalo không cho sao chép ảnh. Hãy dùng nút Mở bằng Safari / Chrome.", 5000); }
+});
 function shareLink(){
   const u = new URL(location.href.split("?")[0]);
   u.searchParams.set("mau", st.tpl);
@@ -535,6 +562,13 @@ $("copyLink").addEventListener("click", async ()=>{
 
 $("saveBtn").addEventListener("click", async ()=>{
   if (st.mode==="name" && !guestName() && st.sheet!=="baotin"){ $("guestName").focus(); toast("Hãy nhập tên khách, hoặc chọn “Không có tên”"); return; }
+  if (IS_ZALO && !sessionStorageGet("tc_escaped") && (IS_IOS || IS_ANDROID)){
+    // Lần đầu bấm trong Zalo: mở thẳng trình duyệt thật, giữ nguyên loại thiệp và tên khách
+    sessionStorageSet("tc_escaped","1");
+    openInBrowser();
+    setTimeout(async ()=>{ if (!document.hidden) showModal([await currentFile()]); }, 1500);
+    return;
+  }
   const b=$("saveBtn"); b.disabled=true;
   try{ await saveFiles([await currentFile()]); } catch(e){ toast("Không tạo được ảnh, hãy thử lại"); }
   b.disabled=false;
